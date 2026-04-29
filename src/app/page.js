@@ -185,7 +185,8 @@ export default function Estimator() {
         <p>Do you want to redo the bathroom floor?</p>
         <div className="options-grid" style={{ marginTop: '1rem' }}>
           {[
-            { id: 'floor_new_tiles', label: 'Yes, I want new tiles and baseboards' },
+            { id: 'floor_new_tiles_we_supply', label: 'Yes, I want new tiles and baseboards (We supply the floor tiles)' },
+            { id: 'floor_new_tiles_you_supply', label: 'Yes, I want new tiles and baseboards (I will supply the floor tiles)' },
             { id: 'floor_keep_as_is', label: 'No, keep the existing floor as is' }
           ].map(opt => (
             <div key={opt.id} className={`option-card ${formData.floor === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('floor', null, opt.id)}>

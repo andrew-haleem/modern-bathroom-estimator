@@ -43,7 +43,9 @@ const DEFAULT_PRICING = [
   { key: 'setup_tub_shower_combo', value: 4000, category: 'Bathroom Set Up', label: 'Tub & Walk-in Shower Combo' },
 
   // Shower Area Tiles
-  { key: 'tiles_provide_yes', value: 1500, category: 'Shower Tiles', label: 'Yes, please provide the tiles' },
+  { key: 'tiles_provide_bathtub', value: 800, category: 'Shower Tiles', label: 'Yes, provide tiles for Bathtub' },
+  { key: 'tiles_provide_shower', value: 1200, category: 'Shower Tiles', label: 'Yes, provide tiles for Shower' },
+  { key: 'tiles_provide_combo', value: 1500, category: 'Shower Tiles', label: 'Yes, provide tiles for Tub & Shower Combo' },
   { key: 'tiles_provide_no', value: 0, category: 'Shower Tiles', label: 'No, homeowner provides tiles' },
 
   // Shower Glass Door
@@ -52,7 +54,8 @@ const DEFAULT_PRICING = [
   { key: 'glass_curtain', value: 0, category: 'Shower Door', label: 'No, will provide a shower curtain' },
 
   // Bathroom Floor
-  { key: 'floor_new_tiles', value: 1000, category: 'Bathroom Floor', label: 'Yes, new tiles and baseboards' },
+  { key: 'floor_new_tiles_we_supply', value: 1500, category: 'Bathroom Floor', label: 'Yes, new tiles and baseboards (We supply floor tiles)' },
+  { key: 'floor_new_tiles_you_supply', value: 1000, category: 'Bathroom Floor', label: 'Yes, new tiles and baseboards (Homeowner supplies floor tiles)' },
   { key: 'floor_keep_as_is', value: 0, category: 'Bathroom Floor', label: 'No, keep existing floor as is' },
 
   // Paint
@@ -73,15 +76,15 @@ const DEFAULT_PRICING = [
   { key: 'misc_run_electrical_led_mirror', value: 300, category: 'Miscellaneous', label: 'Run electrical for an LED mirror' }
 ];
 
-// Seed defaults if empty
-const count = db.prepare('SELECT count(*) as count FROM pricing_config').get().count;
-if (count === 0) {
-  const insert = db.prepare('INSERT INTO pricing_config (key, value, category, label) VALUES (@key, @value, @category, @label)');
-  const insertMany = db.transaction((items) => {
-    for (const item of items) insert.run(item);
-  });
-  insertMany(DEFAULT_PRICING);
-}
+// Seed defaults. Use INSERT OR IGNORE so new keys are added if we update DEFAULT_PRICING
+const insert = db.prepare('INSERT OR IGNORE INTO pricing_config (key, value, category, label) VALUES (@key, @value, @category, @label)');
+const insertMany = db.transaction((items) => {
+  for (const item of items) insert.run(item);
+});
+insertMany(DEFAULT_PRICING);
+
+// Clean up old keys
+db.exec("DELETE FROM pricing_config WHERE key IN ('tiles_provide_yes', 'floor_new_tiles')");
 
 export function getAllPricing() {
   return db.prepare('SELECT * FROM pricing_config').all();

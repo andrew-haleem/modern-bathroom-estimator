@@ -18,9 +18,31 @@ export async function POST(request) {
 
     // Calculate core selections
     addCost(data.setup, 'Bathroom Set Up');
-    addCost(data.tiles, 'Shower Area Tiles');
+    
+    // Shower Tiles Conditional Logic
+    if (data.tiles === 'tiles_provide_yes') {
+      if (data.setup === 'setup_bathtub') {
+        addCost('tiles_provide_bathtub', 'Shower Area Tiles (Bathtub)');
+      } else if (data.setup === 'setup_walk_in_shower' || data.setup === 'setup_convert_tub_to_shower') {
+        addCost('tiles_provide_shower', 'Shower Area Tiles (Shower)');
+      } else if (data.setup === 'setup_tub_shower_combo') {
+        addCost('tiles_provide_combo', 'Shower Area Tiles (Tub & Shower Combo)');
+      }
+    } else {
+      addCost(data.tiles, 'Shower Area Tiles');
+    }
+
     addCost(data.glass, 'Shower Glass Door');
-    addCost(data.floor, 'Bathroom Floor');
+    
+    // Bathroom Floor Logic
+    if (data.floor === 'floor_new_tiles_we_supply') {
+      addCost('floor_new_tiles_we_supply', 'Bathroom Floor (We supply tiles)');
+    } else if (data.floor === 'floor_new_tiles_you_supply') {
+      addCost('floor_new_tiles_you_supply', 'Bathroom Floor (Homeowner supplies tiles)');
+    } else {
+      addCost('floor_keep_as_is', 'Bathroom Floor');
+    }
+
     addCost(data.paint, 'Paint');
     addCost(data.vanity, 'Vanity');
 

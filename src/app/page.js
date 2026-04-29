@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, CheckCircle, Calculator } from 'lucide-react';
 
 const STEPS = [
@@ -16,6 +16,22 @@ export default function Estimator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [estimateData, setEstimateData] = useState(null);
+  const [pricingConfig, setPricingConfig] = useState({});
+
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then(res => res.json())
+      .then(data => {
+        const configMap = {};
+        if (data.pricing) {
+          data.pricing.forEach(item => {
+            if (item.image_url) configMap[item.key] = item.image_url;
+          });
+        }
+        setPricingConfig(configMap);
+      })
+      .catch(console.error);
+  }, []);
 
   const [formData, setFormData] = useState({
     personal: { firstName: '', lastName: '', email: '', phone: '', address: '' },
@@ -141,8 +157,13 @@ export default function Estimator() {
               className={`option-card ${formData.setup === opt.id ? 'selected' : ''}`}
               onClick={() => updateFormData('setup', null, opt.id)}
             >
-              <div className="custom-radio"></div>
-              <span>{opt.label}</span>
+              {pricingConfig[opt.id] && (
+                <img src={pricingConfig[opt.id]} alt={opt.label} className="option-image" />
+              )}
+              <div className="option-content">
+                <div className="custom-radio"></div>
+                <span>{opt.label}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -159,11 +180,19 @@ export default function Estimator() {
           {[
             { id: 'tiles_provide_yes', label: 'Yes, please provide the tiles' },
             { id: 'tiles_provide_no', label: 'No, I (the homeowner) will provide the tiles' }
-          ].map(opt => (
-            <div key={opt.id} className={`option-card ${formData.tiles === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('tiles', null, opt.id)}>
-              <div className="custom-radio"></div><span>{opt.label}</span>
-            </div>
-          ))}
+          ].map(opt => {
+            const imageKey = opt.id === 'tiles_provide_yes' ? 'tiles_provide_bathtub' : opt.id;
+            return (
+              <div key={opt.id} className={`option-card ${formData.tiles === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('tiles', null, opt.id)}>
+                {pricingConfig[imageKey] && (
+                  <img src={pricingConfig[imageKey]} alt={opt.label} className="option-image" />
+                )}
+                <div className="option-content">
+                  <div className="custom-radio"></div><span>{opt.label}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -177,7 +206,12 @@ export default function Estimator() {
             { id: 'glass_curtain', label: 'No, I will provide a shower curtain' }
           ].map(opt => (
             <div key={opt.id} className={`option-card ${formData.glass === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('glass', null, opt.id)}>
-              <div className="custom-radio"></div><span>{opt.label}</span>
+              {pricingConfig[opt.id] && (
+                <img src={pricingConfig[opt.id]} alt={opt.label} className="option-image" />
+              )}
+              <div className="option-content">
+                <div className="custom-radio"></div><span>{opt.label}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -193,7 +227,12 @@ export default function Estimator() {
             { id: 'floor_keep_as_is', label: 'No, keep the existing floor as is' }
           ].map(opt => (
             <div key={opt.id} className={`option-card ${formData.floor === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('floor', null, opt.id)}>
-              <div className="custom-radio"></div><span>{opt.label}</span>
+              {pricingConfig[opt.id] && (
+                <img src={pricingConfig[opt.id]} alt={opt.label} className="option-image" />
+              )}
+              <div className="option-content">
+                <div className="custom-radio"></div><span>{opt.label}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -211,7 +250,12 @@ export default function Estimator() {
             { id: 'paint_patch', label: 'I just want to patch and paint as needed around the shower area' }
           ].map(opt => (
             <div key={opt.id} className={`option-card ${formData.paint === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('paint', null, opt.id)}>
-              <div className="custom-radio"></div><span>{opt.label}</span>
+              {pricingConfig[opt.id] && (
+                <img src={pricingConfig[opt.id]} alt={opt.label} className="option-image" />
+              )}
+              <div className="option-content">
+                <div className="custom-radio"></div><span>{opt.label}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -228,7 +272,12 @@ export default function Estimator() {
             { id: 'vanity_no_work', label: 'No work outside the shower area needs to be done' }
           ].map(opt => (
             <div key={opt.id} className={`option-card ${formData.vanity === opt.id ? 'selected' : ''}`} onClick={() => updateFormData('vanity', null, opt.id)}>
-              <div className="custom-radio"></div><span>{opt.label}</span>
+              {pricingConfig[opt.id] && (
+                <img src={pricingConfig[opt.id]} alt={opt.label} className="option-image" />
+              )}
+              <div className="option-content">
+                <div className="custom-radio"></div><span>{opt.label}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -260,8 +309,13 @@ export default function Estimator() {
           { key: 'raise_light_fixture', label: 'Do you need us to raise your light fixture above the vanity?' },
           { key: 'run_electrical_led_mirror', label: 'Do you need us to run electrical for an LED mirror?' }
         ].map(opt => (
-          <div key={opt.key} className={`option-card ${formData.misc[opt.key] ? 'selected' : ''}`} style={{ marginBottom: '1rem' }} onClick={() => updateFormData('misc', opt.key, !formData.misc[opt.key])}>
-            <div className="custom-radio"></div><span>{opt.label}</span>
+          <div key={opt.key} className={`option-card ${formData.misc[opt.key] ? 'selected' : ''}`} style={{ marginBottom: '1rem', flexDirection: 'row' }} onClick={() => updateFormData('misc', opt.key, !formData.misc[opt.key])}>
+            {pricingConfig[opt.key] && (
+              <img src={pricingConfig[opt.key]} alt={opt.label} className="option-image" style={{ width: '80px', height: '80px', marginBottom: 0 }} />
+            )}
+            <div className="option-content">
+              <div className="custom-radio"></div><span>{opt.label}</span>
+            </div>
           </div>
         ))}
       </div>

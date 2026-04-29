@@ -21,12 +21,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { key, value } = await request.json();
+    const { key, value, image_url } = await request.json();
     if (!key || typeof value !== 'number') {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    updatePricing(key, value);
+    updatePricing(key, value, image_url);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update pricing' }, { status: 500 });

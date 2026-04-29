@@ -1,26 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Save, CheckCircle, List, DollarSign } from 'lucide-react';
+import { LogOut, Save, CheckCircle, List, DollarSign, Upload, Image as ImageIcon } from 'lucide-react';
 
 export default function AdminDashboard({ initialPricing, submissions = [] }) {
-  const [activeTab, setActiveTab] = useState('submissions');
+  const [activeTab, setActiveTab] = useState('pricing');
   const [pricing, setPricing] = useState(initialPricing);
   const [savingKey, setSavingKey] = useState(null);
   const [savedKey, setSavedKey] = useState(null);
+  const [uploadingKey, setUploadingKey] = useState(null);
   const router = useRouter();
+  
+  const fileInputRefs = useRef({});
 
-  const handleUpdate = async (key, newValue) => {
+  const handleUpdate = async (key, newValue, newImageUrl = undefined) => {
     setSavingKey(key);
     try {
+      const currentItem = pricing.find(i => i.key === key);
+      const valToSave = newValue !== undefined ? Number(newValue) : currentItem.value;
+      const imgToSave = newImageUrl !== undefined ? newImageUrl : currentItem.image_url;
+
       const res = await fetch('/api/pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value: Number(newValue) })
+        body: JSON.stringify({ key, value: valToSave, image_url: imgToSave })
       });
+
       if (res.ok) {
-        setPricing(prev => prev.map(item => item.key === key ? { ...item, value: Number(newValue) } : item));
+        setPricing(prev => prev.map(item => item.key === key ? { ...item, value: valToSave, image_url: imgToSave } : item));
         setSavedKey(key);
         setTimeout(() => setSavedKey(null), 2000);
       } else {
@@ -33,9 +41,36 @@ export default function AdminDashboard({ initialPricing, submissions = [] }) {
     }
   };
 
+  const handleFileUpload = async (key, file) => {
+    if (!file) return;
+    setUploadingKey(key);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        // Update the item with the new image URL
+        await handleUpdate(key, undefined, data.url);
+      } else {
+        alert('Failed to upload image');
+      }
+    } catch (error) {
+      alert('Error uploading image');
+    } finally {
+      setUploadingKey(null);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch('/api/admin/login', { method: 'DELETE' });
-    router.refresh();
+    window.location.reload();
   };
 
   const formatCurrency = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
@@ -53,7 +88,7 @@ export default function AdminDashboard({ initialPricing, submissions = [] }) {
           <h1>Admin Portal</h1>
           <p>Modern Renovations Estimator</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
           <button onClick={() => setActiveTab('submissions')} className={`btn ${activeTab === 'submissions' ? 'primary-btn' : 'secondary-btn'}`}>
             <List size={16} /> Submissions
           </button>
@@ -79,6 +114,36 @@ export default function AdminDashboard({ initialPricing, submissions = [] }) {
                         <label>{item.label}</label>
                         <span className="pricing-key">{item.key}</span>
                       </div>
+                      
+                      {/* Image Upload Section */}
+                      <div className="image-upload-section" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                        {item.image_url ? (
+                          <img src={item.image_url} alt="preview" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--glass-border)' }} />
+                        ) : (
+                          <div style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <ImageIcon size={20} color="var(--text-muted)" />
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          style={{ display: 'none' }} 
+                          ref={el => fileInputRefs.current[item.key] = el}
+                          onChange={(e) => handleFileUpload(item.key, e.target.files[0])}
+                        />
+                        <button 
+                          className="btn secondary-btn" 
+                          style={{ padding: '0.5rem', fontSize: '0.85rem' }}
+                          onClick={() => fileInputRefs.current[item.key].click()}
+                          disabled={uploadingKey === item.key}
+                        >
+                          {uploadingKey === item.key ? 'Uploading...' : <><Upload size={14}/> Upload Image</>}
+                        </button>
+                        {item.image_url && (
+                           <button className="btn secondary-btn" style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#ef4444' }} onClick={() => handleUpdate(item.key, undefined, null)}>Remove</button>
+                        )}
+                      </div>
+
                       <div className="pricing-input-group">
                         <span className="currency-symbol">$</span>
                         <input 
@@ -124,7 +189,7 @@ export default function AdminDashboard({ initialPricing, submissions = [] }) {
                         Date: {new Date(sub.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <div style={{ flex: '1 1 300px', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
+                    <div style={{ flex: '1 1 300px', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
                       <h3 style={{ margin: '0 0 0.5rem 0' }}>Estimate: {formatCurrency(sub.total_estimate)}</h3>
                       <details>
                         <summary style={{ cursor: 'pointer', color: 'var(--text-muted)' }}>View Breakdown</summary>

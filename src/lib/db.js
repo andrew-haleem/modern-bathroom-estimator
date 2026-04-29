@@ -35,6 +35,12 @@ db.exec(`
   );
 `);
 
+try {
+  db.exec("ALTER TABLE pricing_config ADD COLUMN image_url TEXT;");
+} catch (e) {
+  // Column already exists
+}
+
 const DEFAULT_PRICING = [
   // Bathroom Set Up
   { key: 'setup_bathtub', value: 3000, category: 'Bathroom Set Up', label: 'Bathtub' },
@@ -90,9 +96,14 @@ export function getAllPricing() {
   return db.prepare('SELECT * FROM pricing_config').all();
 }
 
-export function updatePricing(key, value) {
-  const stmt = db.prepare('UPDATE pricing_config SET value = ? WHERE key = ?');
-  stmt.run(value, key);
+export function updatePricing(key, value, imageUrl) {
+  if (imageUrl !== undefined) {
+    const stmt = db.prepare('UPDATE pricing_config SET value = ?, image_url = ? WHERE key = ?');
+    stmt.run(value, imageUrl, key);
+  } else {
+    const stmt = db.prepare('UPDATE pricing_config SET value = ? WHERE key = ?');
+    stmt.run(value, key);
+  }
 }
 
 export function getPricingMap() {

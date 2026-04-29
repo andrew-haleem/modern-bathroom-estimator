@@ -20,7 +20,19 @@ db.exec(`
     value INTEGER,
     category TEXT,
     label TEXT
-  )
+  );
+
+  CREATE TABLE IF NOT EXISTS submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    address TEXT,
+    total_estimate INTEGER,
+    breakdown_json TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 const DEFAULT_PRICING = [
@@ -86,4 +98,25 @@ export function getPricingMap() {
     acc[row.key] = row.value;
     return acc;
   }, {});
+}
+
+export function saveSubmission(submission) {
+  const stmt = db.prepare(`
+    INSERT INTO submissions (first_name, last_name, email, phone, address, total_estimate, breakdown_json)
+    VALUES (@firstName, @lastName, @email, @phone, @address, @totalEstimate, @breakdownJson)
+  `);
+  const info = stmt.run({
+    firstName: submission.firstName,
+    lastName: submission.lastName,
+    email: submission.email,
+    phone: submission.phone,
+    address: submission.address,
+    totalEstimate: submission.totalEstimate,
+    breakdownJson: JSON.stringify(submission.breakdown)
+  });
+  return info.lastInsertRowid;
+}
+
+export function getAllSubmissions() {
+  return db.prepare('SELECT * FROM submissions ORDER BY created_at DESC').all();
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPricingMap } from '@/lib/db';
+import { getPricingMap, saveSubmission } from '@/lib/db';
 
 export async function POST(request) {
   try {
@@ -38,7 +38,18 @@ export async function POST(request) {
       if (data.misc.run_electrical_led_mirror) addCost('misc_run_electrical_led_mirror', 'Electrical for LED mirror');
     }
 
-    // You could also save the lead info here to a database if needed.
+    // Save the lead info to database
+    if (data.personal) {
+      saveSubmission({
+        firstName: data.personal.firstName,
+        lastName: data.personal.lastName,
+        email: data.personal.email,
+        phone: data.personal.phone,
+        address: data.personal.address,
+        totalEstimate: total,
+        breakdown: breakdown
+      });
+    }
     
     return NextResponse.json({ total, breakdown });
   } catch (error) {

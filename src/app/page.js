@@ -53,6 +53,9 @@ export default function Estimator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+      if (!res.ok) {
+        throw new Error('Failed to calculate estimate');
+      }
       const data = await res.json();
       setEstimateData(data);
       setCurrentStep(STEPS.length - 1);

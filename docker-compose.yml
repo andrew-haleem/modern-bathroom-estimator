@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  estimator:
+    build: .
+    container_name: modern-renovations-estimator
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - estimator_data:/app/data
+    environment:
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=modern123 # Change this in Portainer environment variables
+
+volumes:
+  estimator_data:

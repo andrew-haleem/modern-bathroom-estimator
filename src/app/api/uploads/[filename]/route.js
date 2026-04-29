@@ -4,7 +4,7 @@ import fs from 'fs';
 
 export async function GET(request, { params }) {
   try {
-    const filename = params.filename;
+    const { filename } = await params;
     
     // Security check: prevent directory traversal
     if (filename.includes('/') || filename.includes('..')) {

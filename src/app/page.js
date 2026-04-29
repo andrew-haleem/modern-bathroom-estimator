@@ -23,8 +23,8 @@ export default function Estimator() {
       .then(res => res.json())
       .then(data => {
         const configMap = {};
-        if (data.pricing) {
-          data.pricing.forEach(item => {
+        if (Array.isArray(data)) {
+          data.forEach(item => {
             if (item.image_url) configMap[item.key] = item.image_url;
           });
         }

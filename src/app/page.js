@@ -101,24 +101,24 @@ export default function Estimator() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
             <label>First Name *</label>
-            <input type="text" className="input-field" value={formData.personal.firstName} onChange={(e) => updateFormData('personal', 'firstName', e.target.value)} required />
+            <input type="text" className="input-field" value={formData.personal.firstName} onChange={(e) => updateFormData('personal', 'firstName', e.target.value)} autoComplete="given-name" data-1p-ignore required />
           </div>
           <div>
             <label>Last Name *</label>
-            <input type="text" className="input-field" value={formData.personal.lastName} onChange={(e) => updateFormData('personal', 'lastName', e.target.value)} required />
+            <input type="text" className="input-field" value={formData.personal.lastName} onChange={(e) => updateFormData('personal', 'lastName', e.target.value)} autoComplete="family-name" data-1p-ignore required />
           </div>
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <label>Email *</label>
-          <input type="email" className="input-field" value={formData.personal.email} onChange={(e) => updateFormData('personal', 'email', e.target.value)} required />
+          <input type="email" className="input-field" value={formData.personal.email} onChange={(e) => updateFormData('personal', 'email', e.target.value)} autoComplete="email" data-1p-ignore required />
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <label>Phone Number *</label>
-          <input type="tel" className="input-field" value={formData.personal.phone} onChange={(e) => updateFormData('personal', 'phone', e.target.value)} required />
+          <input type="tel" className="input-field" value={formData.personal.phone} onChange={(e) => updateFormData('personal', 'phone', e.target.value)} autoComplete="tel" data-1p-ignore required />
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <label>Address *</label>
-          <input type="text" className="input-field" value={formData.personal.address} onChange={(e) => updateFormData('personal', 'address', e.target.value)} required />
+          <input type="text" className="input-field" value={formData.personal.address} onChange={(e) => updateFormData('personal', 'address', e.target.value)} autoComplete="street-address" data-1p-ignore required />
         </div>
       </div>
     </div>

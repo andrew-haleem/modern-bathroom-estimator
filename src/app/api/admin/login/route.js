@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'modern123';
 
@@ -7,15 +8,13 @@ export async function POST(request) {
     const { password } = await request.json();
     
     if (password === ADMIN_PASSWORD) {
-      const response = NextResponse.json({ success: true });
-      response.cookies.set({
-        name: 'admin_auth',
-        value: password,
+      const cookieStore = await cookies();
+      cookieStore.set('admin_auth', password, {
         httpOnly: true,
         path: '/',
         maxAge: 60 * 60 * 24 * 7 // 1 week
       });
-      return response;
+      return NextResponse.json({ success: true });
     }
     
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
@@ -25,7 +24,7 @@ export async function POST(request) {
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ success: true });
-  response.cookies.delete('admin_auth');
-  return response;
+  const cookieStore = await cookies();
+  cookieStore.delete('admin_auth');
+  return NextResponse.json({ success: true });
 }

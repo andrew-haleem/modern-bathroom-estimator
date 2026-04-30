@@ -12,9 +12,6 @@ RUN npm install
 # Copy application code
 COPY . .
 
-# Build application
-RUN npm run build
-
-# Start the application
+# Build application is handled in CMD to allow volume mounts
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD npm run build && npm start

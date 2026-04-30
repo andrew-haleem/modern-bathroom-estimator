@@ -42,3 +42,8 @@ next-env.d.ts
 
 # Database
 data/
+
+# Deployment scripts
+create_portainer_stack.js
+deploy.sh
+list_stacks.js

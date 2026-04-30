@@ -3,6 +3,8 @@ import { getAllPricing, updatePricing } from '@/lib/db';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'modern123'; // Default fallback
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     const pricing = getAllPricing();

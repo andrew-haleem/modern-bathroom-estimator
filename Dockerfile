@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Install sqlite3 native dependencies
 RUN apk add --no-cache python3 make g++ sqlite-dev
